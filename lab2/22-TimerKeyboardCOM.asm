@@ -23,6 +23,7 @@ mydata segment
     com_old_segment dw 0    ; Default segment of the COM interrupt vector
     rtc_counter dw 0        ; Counter to implement interrupt on each 18s tick
     pointer dw 0            ; Current pointer on symbol in mystr
+    pointer2 dw 0           ; Pointer for second line (COM) of videobuffer
     endprog_flag db 0       ; If this flag = 1, we need to stop the program
 mydata ends
 
@@ -195,10 +196,12 @@ com_handler:
     
     mov dx, 2F8h
     in al, dx
-    mov si, ds:[pointer]
-    shl si, 1
+    mov si, ds:[pointer2]
     mov es:[si + 0A0h], al
-
+    inc si
+    inc si
+    mov ds:[pointer2], si
+    
     pop ax
     
     mov al, 20h
