@@ -118,8 +118,9 @@ METKA:
 
 mov ax, 0b800h
 mov es, ax
-mov si, char ;ukazatel' v si
-mov al, ds:[si] ;simvol v al
+mov si, massiv ;ukazatel' v si
+mov bp, char
+mov al, ds:[si+bp] ;simvol v al
 mov ah, color ;zvet v ah
 mov bx, position ;posizia v bx ;zaderzhka dlya vivoda symvola raz v secundu
 mov es:[bx], ax ;vivod simvola na ekran
