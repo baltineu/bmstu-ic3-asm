@@ -34,9 +34,8 @@ time_1ch dw 0 ;peremennaya dlya peresh'eta
 
 off_1ch equ 1Ch*4 ;smesh'nie vektora 1Ch v TVP
 massiv db '  1234';massiv simvolov
-char db 0 ;ukazatel na massiv simvolov
+char dw 0 ;ukazatel na massiv simvolov
 color db 05h ;zvet
-position dw 0 ;pozizia simvola na ekrane
 position1 dw 0 ;nachalnaya pozizia na ekrane
 cnt dw 0
 
@@ -112,23 +111,21 @@ pop ds
 ;zapis' v ES adresa nachala videopamyati B800:0000
 
 mov bx, position1
-mov position, bx
 
 METKA:
 
 mov ax, 0b800h
 mov es, ax
-mov si, massiv ;ukazatel' v si
-mov bp, char
-mov al, ds:[si+bp] ;simvol v al
+mov ax, offset massiv ;ukazatel' v si
+add ax, char
+mov si, ax
+mov al, ds:[si] ;simvol v al
 mov ah, color ;zvet v ah
-mov bx, position ;posizia v bx ;zaderzhka dlya vivoda symvola raz v secundu
 mov es:[bx], ax ;vivod simvola na ekran
 add bx, 2 ;переход к следующей позиции
-cmp bx, 12
 
 inc char ;sleduush'ii simvol
-cmp char, 5 ;proverka na simvol 5
+cmp char, 6 ;proverka na simvol 5
 jne symbol2
 mov char, 0
 jmp symbol2
@@ -137,6 +134,14 @@ symbol2:
 
 cmp bx, 12
 jl METKA
+
+dec char ;
+cmp char, -1 ;
+jne symbol3
+mov char, 5
+jmp symbol3
+
+symbol3:
 
 ;vosstanovlenie registrov
 
