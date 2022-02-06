@@ -36,7 +36,6 @@ off_1ch equ 1Ch*4 ;smesh'nie vektora 1Ch v TVP
 massiv db '  1234';massiv simvolov
 char dw 0 ;ukazatel na massiv simvolov
 color db 05h ;zvet
-position1 dw 0 ;nachalnaya pozizia na ekrane
 cnt dw 0
 
 main proc
@@ -110,38 +109,38 @@ pop ds
 
 ;zapis' v ES adresa nachala videopamyati B800:0000
 
-mov bx, position1
+mov bx, 0                               ; в каждой итерации вывод заново стартует с начала видеобуфера
 
-METKA:
+METKA:                                  ; метка начала цикла вывода
 
-mov ax, 0b800h
-mov es, ax
-mov ax, offset massiv ;ukazatel' v si
-add ax, char
-mov si, ax
-mov al, ds:[si] ;simvol v al
-mov ah, color ;zvet v ah
-mov es:[bx], ax ;vivod simvola na ekran
-add bx, 2 ;переход к следующей позиции
+mov ax, 0b800h                          ; сегмент видеобуфера b8000, адрес помещается в AX
+mov es, ax                              ; сегментный регистр ES инициализируется адресом сегмента видеобуфера
+mov ax, offset massiv                   ; смещение массива (massiv) помещается в регистр AX
+add ax, char                            ; к смещению переменной massiv добавляется указатель (char) на текущий элемент массива
+mov si, ax                              ; полученное смещение сохраняется в индексный регистр SI
+mov al, ds:[si]                         ; сохранение кода символа из массива в AL
+mov ah, color                           ; сохранение цвета символа в AH
+mov es:[bx], ax                         ; вывод символа на экран
+add bx, 2                               ; переход к следующей позиции на экране
 
-inc char ;sleduush'ii simvol
-cmp char, 6 ;proverka na simvol 5
-jne symbol2
-mov char, 0
-jmp symbol2
+inc char                                ; происходит инкрементация указателя
+cmp char, 6                             ; сравнение значения указателя с 6 (выход за границы массива)
+jne skip_zero                           ; если границы не нарушены, пропускается обнуление указателя
+mov char, 0                             ; обнуление указателя
 
-symbol2:
+skip_zero:                              ; метка для пропуска обнуления указателя
 
-cmp bx, 12
-jl METKA
+cmp bx, 12                              ; условие окончания цикла (6 символов по 2 байта сохранены в видеобуфер)
+jl METKA                                ; если условие не выполнено, цикл стартует заново
 
-dec char ;
-cmp char, -1 ;
-jne symbol3
-mov char, 5
-jmp symbol3
+; подготовка к следующей итерации, в которой вывод стартует с символа, расположенного в массиве слева от начального символа этой итерации
+dec char                                ; декремент указателя
+cmp char, -1                            ; сравнение значения указателя с -1 (границы массива нарушены)
+jne vyhod                               ; если границы не нарушены, прыжок на выход из процедуры обработки
+mov char, 5                             ; если нарушены, указатель = 5 (крайний правый элемент массива)
+jmp vyhod                               ; переход на выход из процедуры обработки прерывания
 
-symbol3:
+vyhod:
 
 ;vosstanovlenie registrov
 
